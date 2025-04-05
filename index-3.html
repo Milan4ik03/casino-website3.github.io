@@ -1,0 +1,621 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Онлайн Казино</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            text-align: center;
+        }
+        header {
+            background-color: #1f1f1f;
+            padding: 20px;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        section {
+            margin: 20px;
+            padding: 20px;
+            background-color: #1f1f1f;
+            border-radius: 10px;
+        }
+        button {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #e68900;
+            transform: scale(1.1);
+        }
+    </style>
+    <script>
+        let wweb3;
+        let UserAccount;
+        const CasinoAddress = '0x624DB1b9E2f4d96fE89c65133337DEb8166bCAf1'; // Адрес казино
+
+        async function connectMetaMask() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    web3 = new Web3(window.ethereum);
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    userAccount = accounts[0];
+                    document.getElementById('walletAddress').innerText = 'Адрес кошелька: ' + userAccount;
+                    console.log("MetaMask подключен:", userAccount);
+                } catch (error) {
+                    console.error("Ошибка подключения к MetaMask:", error);
+                    alert("Не удалось подключиться к MetaMask. Разрешите подключение в расширении.");
+                }
+            } else {
+                alert("MetaMask не установлен! Установите расширение для браузера.");
+            }
+        }
+
+        async function depositFunds() {
+            if (!userAccount) {
+                alert("Сначала подключите MetaMask!");
+                return;
+            }
+            const amount = prompt('Введите сумму для пополнения в ETH:');
+            if (!amount || isNaN(amount) || amount <= 0) {
+                alert('Введите корректную сумму!');
+                return;
+            }
+            try {
+                const tx = await web3.eth.sendTransaction({
+                    from: userAccount,
+                    to: casinoAddress,
+                    value: web3.utils.toWei(amount, 'ether')
+                });
+                console.log("Транзакция отправлена:", tx);
+                alert("Пополнение успешно!");
+            } catch (error) {
+                console.error("Ошибка пополнения:", error);
+                alert("Ошибка при отправке транзакции.");
+            }
+        }
+
+        async function withdrawFunds() {
+            if (!userAccount) {
+                alert("Сначала подключите MetaMask!");
+                return;
+            }
+            const amount = prompt('Введите сумму для вывода в ETH:');
+            if (!amount || isNaN(amount) || amount <= 0) {
+                alert('Введите корректную сумму!');
+                return;
+            }
+            try {
+                const tx = await web3.eth.sendTransaction({
+                    from: casinoAddress,
+                    to: userAccount,
+                    value: web3.utils.toWei(amount, 'ether')
+                });
+                console.log("Транзакция на вывод отправлена:", tx);
+                alert("Вывод выполнен успешно!");
+            } catch (error) {
+                console.error("Ошибка вывода:", error);
+                alert("Ошибка при отправке транзакции.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Онлайн Казино</h1>
+        <p id="walletInfo">Кошелек: Не подключен | Баланс: 0 ETH</p>
+        <nav>
+            <ul>
+                <li><a href="index.html">Главная</a></li>
+                <li><a href="games.html">Игры</a></li>
+                <li><a href="profile.html">Профиль</a></li>
+                <li><a href="wallet.html">Кошелек</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    
+    <section id="home">
+        <h2>Добро пожаловать в казино!</h2>
+        <button onclick="connectMetaMask()">Подключить MetaMask</button>
+        <p id="walletAddress">Адрес кошелька: Не подключен</p>
+    </section>
+    
+    <section id="wallet">
+        <h2>Кошелек</h2>
+        <button onclick="depositFunds()">Пополнить</button>
+        <button onclick="withdrawFunds()">Вывести</button>
+    </section>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Слот-Машина с Ставками</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #121212;
+            color: white;
+        }
+
+        .slot-machine {
+            display: flex;
+            justify-content: center;
+            margin: 50px 0;
+        }
+
+        .reel {
+            width: 100px;
+            height: 100px;
+            margin: 0 10px;
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: #ff9800;
+            border-radius: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #e68900;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Слот-Машина с Ставками</h1>
+
+    <div class="slot-machine">
+        <div class="reel" id="reel1"></div>
+        <div class="reel" id="reel2"></div>
+        <div class="reel" id="reel3"></div>
+    </div>
+
+    <input type="number" id="betAmount" placeholder="Введите ставку (ETH)" min="0.01" step="0.01">
+    <button onclick="spin()">Запустить</button>
+
+    <p class="result" id="resultText"></p>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script>
+        const symbols = ['🍒', '🍋', '🍊', '🍉', '🍇'];  // Символы на барабанах
+        let Wweb3;
+        let UuserAccount;
+
+        // Подключение MetaMask
+        async function initMetaMask() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const accounts = await web3.eth.getAccounts();
+                userAccount = accounts[0];
+                console.log('Подключен кошелек:', userAccount);
+            } else {
+                alert('MetaMask не найден! Пожалуйста, установите MetaMask.');
+            }
+        }
+
+        initMetaMask();
+
+        // Функция для вращения барабанов
+        function spin() {
+            const betAmount = parseFloat(document.getElementById('betAmount').value);
+            if (isNaN(betAmount) || betAmount <= 0) {
+                alert('Введите правильную сумму ставки!');
+                return;
+            }
+
+            // Отправка транзакции через MetaMask для ставки
+            web3.eth.sendTransaction({
+                from: userAccount,
+                to: "0xYourCasinoAddressHere", // Адрес казино для получения ставки
+                value: web3.utils.toWei(betAmount.toString(), 'ether')
+            })
+            .then(receipt => {
+                console.log('Транзакция успешно отправлена:', receipt);
+                playSlot(); // Игра начнется после отправки ставки
+            })
+            .catch(error => {
+                console.error('Ошибка при отправке транзакции:', error);
+                alert('Не удалось отправить ставку!');
+            });
+        }
+
+        // Функция для вращения барабанов
+        function playSlot() {
+            document.getElementById('resultText').textContent = '';
+            let reel1 = document.getElementById('reel1');
+            let reel2 = document.getElementById('reel2');
+            let reel3 = document.getElementById('reel3');
+
+            // Вращение барабанов
+            reel1.innerHTML = getRandomSymbol();
+            reel2.innerHTML = getRandomSymbol();
+            reel3.innerHTML = getRandomSymbol();
+
+            // Проверка на выигрыш
+            setTimeout(() => checkWin(), 1000);
+        }
+
+        // Функция для получения случайного символа
+        function getRandomSymbol() {
+            return symbols[Math.floor(Math.random() * symbols.length)];
+        }
+
+        // Проверка на совпадения
+        function checkWin() {
+            let reel1 = document.getElementById('reel1').innerHTML;
+            let reel2 = document.getElementById('reel2').innerHTML;
+            let reel3 = document.getElementById('reel3').innerHTML;
+
+            if (reel1 === reel2 && reel2 === reel3) {
+                document.getElementById('resultText').textContent = 'Вы выиграли! 🎉';
+                // Здесь можно добавить код для перевода выигрыша пользователю
+            } else {
+                document.getElementById('resultText').textContent = 'Попробуйте снова. 😢';
+            }
+        }
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рулетка с Ставками</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            text-align: center;
+        }
+        .roulette-wheel {
+            border: 10px solid #ff9800;
+            border-radius: 50%;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 50px auto;
+            background-color: #333;
+            font-size: 2rem;
+            color: white;
+        }
+        .spin-btn {
+            padding: 10px 20px;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .spin-btn:hover {
+            background-color: #e68900;
+        }
+        .result, .balance {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Рулетка с Ставками</h1>
+
+    <div class="roulette-wheel" id="wheelNumber">0</div>
+
+    <div>
+        <label>Введите ставку (ETH):</label>
+        <input type="number" id="betAmount" placeholder="Минимум 0.01 ETH" min="0.01" step="0.01">
+    </div>
+
+    <div>
+        <label>Ставка на число (0-36):</label>
+        <input type="number" id="betNumber" min="0" max="36">
+    </div>
+
+    <button class="spin-btn" onclick="placeBet()">Сделать ставку</button>
+
+    <p class="balance" id="userBalance">Баланс: 0 ETH</p>
+    <p class="result" id="resultText"></p>
+
+    <script>
+        let web3;
+        let uuserAccount;
+        let CcasinoAddress = "0xYourCasinoAddressHere"; // Адрес казино
+
+        async function initMetaMask() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const accounts = await web3.eth.getAccounts();
+                userAccount = accounts[0];
+                updateBalance();
+                console.log('MetaMask подключен:', userAccount);
+            } else {
+                alert('MetaMask не найден! Установите MetaMask.');
+            }
+        }
+
+        async function updateBalance() {
+            if (!userAccount) return;
+            const balance = await web3.eth.getBalance(userAccount);
+            document.getElementById('userBalance').innerText = 
+                'Баланс: ' + web3.utils.fromWei(balance, 'ether') + ' ETH';
+        }
+
+        async function placeBet() {
+            const betAmount = parseFloat(document.getElementById('betAmount').value);
+            const betNumber = parseInt(document.getElementById('betNumber').value);
+
+            if (isNaN(betAmount) || betAmount <= 0.01) {
+                alert('Введите сумму ставки (минимум 0.01 ETH)');
+                return;
+            }
+
+            if (isNaN(betNumber) || betNumber < 0 || betNumber > 36) {
+                alert('Введите число от 0 до 36!');
+                return;
+            }
+
+            // Отправляем ставку в казино через MetaMask
+            web3.eth.sendTransaction({
+                from: userAccount,
+                to: casinoAddress,
+                value: web3.utils.toWei(betAmount.toString(), 'ether')
+            })
+            .then(receipt => {
+                console.log('Ставка отправлена:', receipt);
+                spinRoulette(betNumber, betAmount);
+            })
+            .catch(error => {
+                console.error('Ошибка отправки ставки:', error);
+                alert('Не удалось отправить ставку!');
+            });
+        }
+
+        function spinRoulette(betNumber, betAmount) {
+            const randomNumber = Math.floor(Math.random() * 37);
+            document.getElementById('wheelNumber').innerText = randomNumber;
+
+            let resultText = `Выпало число ${randomNumber}. `;
+
+            if (betNumber === randomNumber) {
+                resultText += `Вы выиграли ${betAmount * 35} ETH! 🎉`;
+                // Здесь можно реализовать выплату выигрыша через контракт
+            } else {
+                resultText += 'Вы проиграли. Попробуйте снова. 😢';
+            }
+
+            document.getElementById('resultText').innerText = resultText;
+            updateBalance();
+        }
+
+        window.onload = initMetaMask;
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Онлайн Казино</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            text-align: center;
+        }
+        header {
+            background-color: #1f1f1f;
+            padding: 20px;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        section {
+            margin: 20px;
+            padding: 20px;
+            background-color: #1f1f1f;
+            border-radius: 10px;
+        }
+        button {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #e68900;
+            transform: scale(1.1);
+        }
+    </style>
+    <script>
+        let Web3;
+        let userAccount;
+        const casinoAddress = '0x624DB1b9E2f4d96fE89c65133337DEb8166bCAf1';
+
+        async function connectMetaMask() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    web3 = new Web3(window.ethereum);
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    userAccount = accounts[0];
+                    document.getElementById('walletAddress').innerText = 'Адрес кошелька: ' + userAccount;
+                    updateBalance();
+                } catch (error) {
+                    alert("Ошибка подключения к MetaMask");
+                }
+            } else {
+                alert("MetaMask не установлен!");
+            }
+        }
+
+        async function updateBalance() {
+            if (!userAccount) return;
+            const balance = await web3.eth.getBalance(userAccount);
+            document.getElementById('userBalance').innerText =
+                'Баланс: ' + web3.utils.fromWei(balance, 'ether') + ' ETH';
+        }
+
+        async function depositFunds() {
+            if (!userAccount) {
+                alert("Сначала подключите MetaMask!");
+                return;
+            }
+            const amount = prompt('Введите сумму для пополнения в ETH:');
+            if (!amount || isNaN(amount) || amount <= 0) {
+                alert('Введите корректную сумму!');
+                return;
+            }
+            try {
+                await web3.eth.sendTransaction({
+                    from: userAccount,
+                    to: casinoAddress,
+                    value: web3.utils.toWei(amount, 'ether')
+                });
+                alert("Пополнение успешно!");
+                updateBalance();
+            } catch (error) {
+                alert("Ошибка при отправке транзакции.");
+            }
+        }
+
+        async function withdrawFunds() {
+            if (!userAccount) {
+                alert("Сначала подключите MetaMask!");
+                return;
+            }
+            const amount = prompt('Введите сумму для вывода в ETH:');
+            if (!amount || isNaN(amount) || amount <= 0) {
+                alert('Введите корректную сумму!');
+                return;
+            }
+            try {
+                await web3.eth.sendTransaction({
+                    from: casinoAddress,
+                    to: userAccount,
+                    value: web3.utils.toWei(amount, 'ether')
+                });
+                alert("Вывод выполнен успешно!");
+                updateBalance();
+            } catch (error) {
+                alert("Ошибка при отправке транзакции.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Онлайн Казино</h1>
+        <nav>
+            <ul>
+                <li><a href="#home">Главная</a></li>
+                <li><a href="#games">Игры</a></li>
+                <li><a href="#wallet">Кошелек</a></li>
+            </ul>
+        </nav>
+        <p id="walletAddress">Адрес кошелька: Не подключен</p>
+        <p id="userBalance">Баланс: 0 ETH</p>
+    </header>
+
+    <section id="home">
+        <h2>Добро пожаловать в казино!</h2>
+        <button onclick="connectMetaMask()">Подключить MetaMask</button>
+    </section>
+
+    <section id="wallet">
+        <h2>Кошелек</h2>
+        <button onclick="depositFunds()">Пополнить</button>
+        <button onclick="withdrawFunds()">Вывести</button>
+    </section>
+
+    <section id="games">
+        <h2>Игры</h2>
+        <p><a href="slots.html" style="color: #ff9800; font-size: 18px;">Слот-машина</a></p>
+        <p><a href="roulette.html" style="color: #ff9800; font-size: 18px;">Рулетка</a></p>
+    </section>
+</body>
+</html>
